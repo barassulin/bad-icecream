@@ -1,14 +1,13 @@
+"""
+a select server - by Bar Assulin
+Date: 31/5/24
+"""
 import select
 import socket
 import protocol
 import pickle
-import sys
-import datetime
 import logging
-# This is a sample Python script.
 import Map
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import pygame
 import Player
 import random
@@ -18,10 +17,8 @@ import IceLoop
 MAX_CLIENTS = 2
 size_cube = 57
 size_line = 4
-# the pixel number of the up left corner in every cube
 up_limit = 84
 left_limit = 91
-# those are not existing cubes:
 down_limit = 694
 right_limit = 701
 LOG_FILE = 'server.log'
@@ -39,7 +36,6 @@ AT_SIGN = ':'
 FRUITS = 7
 GAME_OVER = False
 
-
 inputs = []
 outputs = []
 message_queues = {}
@@ -49,6 +45,7 @@ player1 = Player.Player(4, 4, 1, 0, [0, -1])
 player2 = Player.Player(5, 5, 2, 0, [0, 1])
 MAP = Map.create_map()
 
+# players by index
 SOURCE_DICTIONARY = {
     0: player1,
     1: player2
@@ -123,11 +120,12 @@ def is_ice_loop(x, y, is_ice):
     return False
 
 
-def try_move(player):
+def try_move(player, player2):
     x = player.xcube
     y = player.ycube
+
     if player.move(player2, MAP):
-        MAP[y][x].player=0
+        MAP[y][x].player = 0
 
 
 def set_players():
@@ -186,7 +184,7 @@ def update_map(data, client_index):
         ICE_LOOP[client_index].ycube = ICE_LOOP[client_index].ycube + ICE_LOOP[client_index].ydir
         ICE_LOOP[client_index].is_working = is_ice_loop(ICE_LOOP[client_index].xcube, ICE_LOOP[client_index].ycube, ICE_LOOP[client_index].is_ice)
     """
-    #if data == pygame.KEYDOWN:
+    # if data == pygame.KEYDOWN:
     moved = True
     if data == pygame.K_SPACE and not ICE_LOOP[client_index].is_working:
         ICE_LOOP[client_index].xdir = player.direction[0]
@@ -217,7 +215,11 @@ def update_map(data, client_index):
     else:
         moved = False
     if moved:
-        try_move(player)
+        if client_index == 1:
+            secoendplayer = SOURCE_DICTIONARY[0]
+        else:
+            secoendplayer = SOURCE_DICTIONARY[1]
+        try_move(player, secoendplayer)
 
     if player.check_got_fruit(MAP):
         global FRUITS
@@ -257,7 +259,7 @@ def receive_responses(server_socket, open_client_sockets, messages_to_send):
                 # Check if response is empty, indicating client disconnected
                 if response is None:
                     # Remove disconnected client from the list of open sockets
-                    #open_client_sockets.remove(current_socket)
+                    # open_client_sockets.remove(current_socket)
                     # update who won
                     pass
                 else:
@@ -287,7 +289,7 @@ def main_loop(server_socket):
                 logout(current_socket, open_client_sockets)
 
             responses = receive_responses(server_socket, open_client_sockets, messages_to_send)
-            #message = protocol.send_protocol(pickle.dumps(MAP).decode())
+            # message = protocol.send_protocol(pickle.dumps(MAP).decode())
             if not GAME_OVER:
                 message = pickle.dumps(MAP)
             else:

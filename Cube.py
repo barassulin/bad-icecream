@@ -1,3 +1,7 @@
+"""
+Cubes of map - by Bar Assulin
+Date: 31/5/24
+"""
 window_width = 800
 window_height = 775
 PINK = (255, 146, 255)
@@ -10,12 +14,6 @@ REFRESH_RATE = 10
 FRUIT1 = "cherry.jpg"
 FRUIT2 = "strawberry.jpg"
 FRUIT3 = "blueberry.jpg"
-
-FRUIT_DICTIONARY = {
-    FRUIT1: 1,
-    FRUIT2: 2,
-    FRUIT3: 3,
-}
 
 
 class Cube:

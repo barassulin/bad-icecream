@@ -1,3 +1,8 @@
+"""
+Map - by Bar Assulin
+Date - 31/5/24
+"""
+
 import Cube
 
 size_cube = 57

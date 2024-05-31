@@ -17,11 +17,11 @@ class Player:
             b = True
         return b
 
-    def move(self, player2, MAP):
+    def move(self, player, MAP):
         x = self.xcube + self.direction[0]
         y = self.ycube + self.direction[1]
         if Map.check_on_map(x, y) and not MAP[y][x].ice:
-            if x != player2.xcube or y != player2.ycube:
+            if x != player.xcube or y != player.ycube:
                 self.xcube = self.xcube + self.direction[0]
                 self.ycube = self.ycube + self.direction[1]
                 MAP[self.ycube][self.xcube].player = self.number

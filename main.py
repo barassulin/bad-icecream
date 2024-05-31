@@ -1,43 +1,31 @@
-# This is a sample Python script.
+"""
+a client - by Bar Assulin
+Date: 31/5/24
+"""
 import time
-
-import Map
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-import move
 import pygame
-import Player
 import socket
-import select
 import protocol
-import random
 import pickle
 
 # constants
-
 size_cube = 57
 size_line = 4
-
-# the pixel number of the up left corner in every cube
 up_limit = 84
 left_limit = 91
-# those are not existing cubes:
 down_limit = 694
 right_limit = 701
-
 window_width = 800
 window_height = 775
 PINK = (255, 146, 255)
 WHITE = (255, 255, 255)
 IMAGE = 'pics/screen1new.jpg'
-
 REFRESH_RATE = 10
-
 FRUITS = 7
-
-SERVER_IP = '127.0.0.1'
+SERVER_IP = '172.16.6.65'
 SERVER_PORT = 20003
 
+# dict for files
 FILE_DICTIONARY = {
     '1': 'pics/probPL1.jpg',
     '2': 'pics/probPL2.jpg',
@@ -49,6 +37,7 @@ FILE_DICTIONARY = {
     "p1won": 'pics/PINK.jpg',
     "p2won": 'pics/PURPLE.jpg'
 }
+
 
 """
 checks if ice got to the limit: 
@@ -62,6 +51,14 @@ checks if ice got to the limit:
 
 # funcs
 def print_pic(file_name, x, y, key):
+    """
+    prints pics
+    :param file_name: the pics file name
+    :param x: x pixel on screen
+    :param y: y pixel on screen
+    :param key: the background color
+    :return: nothing
+    """
     pic = pygame.image.load(file_name).convert()
     if key is not None:
         pic.set_colorkey(key)
@@ -70,6 +67,11 @@ def print_pic(file_name, x, y, key):
 
 
 def print_map(map):
+    """
+    prints all the cubes on the map
+    :param map: cube list
+    :return: nothing
+    """
     for x in range(10):
         for y in range(10):
             print_pic(FILE_DICTIONARY[map[y][x].ice], map[y][x].pixelw, map[y][x].pixelh, None)
@@ -122,8 +124,8 @@ def main():
                 print_pic(FILE_DICTIONARY[response.decode()], 0, 0, None)
                 time.sleep(5)
             except Exception:
-                MAP = pickle.loads(response)
-                print_map(MAP)
+                map = pickle.loads(response)
+                print_map(map)
         """
             # response = protocol.recv_protocol(client_socket, response)
         # logging.debug("getting msg request" + response)
