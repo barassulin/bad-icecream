@@ -12,8 +12,17 @@ def send_protocol(message):
     :param message: the string
     :return: a string with her length
     """
-    length = str(len(message))
-    message = length + END_SIGN + message
+    try:
+        length = str(len(message))
+    except Exception:
+        message = str(message)
+        length = str(len(message))
+        message = message.encode()
+
+    message = length.encode() + END_SIGN.encode() + message
+    print("sending - protocol")
+    print(message)
+
     return message
 
 
@@ -23,9 +32,15 @@ def recv_protocol(socket, message):
     :param socket: the socket
     :return: the string
     """
-    length = ""
-    while message != END_SIGN:
-        length = length + message
-        message = socket.recv(1).decode()
-    message = socket.recv(int(length)).decode()
+    message_length = len(END_SIGN.encode())
+    message = message + socket.recv(message_length - len(message)).decode()
+    while END_SIGN not in message:
+        message = message + socket.recv(1).decode()
+    message = socket.recv(int(message[:-message_length]))
+    print("reciving - protocol")
+    print(message)
+    try:
+        message = message.decode()
+    except Exception:
+        pass
     return message

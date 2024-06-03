@@ -22,7 +22,8 @@ WHITE = (255, 255, 255)
 IMAGE = 'pics/screen1new.jpg'
 REFRESH_RATE = 10
 FRUITS = 7
-SERVER_IP = '172.16.6.65'
+# SERVER_IP = '172.16.6.65'
+SERVER_IP = '127.0.0.1'
 SERVER_PORT = 20003
 
 # dict for files
@@ -30,8 +31,11 @@ FILE_DICTIONARY = {
     '1': 'pics/probPL1.jpg',
     '2': 'pics/probPL2.jpg',
     '10': "pics/cherry.jpg",
+    '11': "pics/icedcherry.jpg",
     '20': "pics/strawberry.jpg",
+    '21': "pics/icedberry.jpg",
     '30': "pics/blueberry.jpg",
+    '31': "pics/icedblub.jpg",
     True: 'pics/ice.jpg',
     False: 'pics/empty_cube.jpg',
     "p1won": 'pics/PINK.jpg',
@@ -74,8 +78,15 @@ def print_map(map):
     """
     for x in range(10):
         for y in range(10):
-            print_pic(FILE_DICTIONARY[map[y][x].ice], map[y][x].pixelw, map[y][x].pixelh, None)
-            if str(map[y][x].fruit) in FILE_DICTIONARY:
+            if not map[y][x].ice:
+                if str(map[y][x].player) not in FILE_DICTIONARY and str(map[y][x].fruit) not in FILE_DICTIONARY:
+                    print_pic(FILE_DICTIONARY[map[y][x].ice], map[y][x].pixelw, map[y][x].pixelh, None)
+            else:
+                if str(map[y][x].fruit) in FILE_DICTIONARY:
+                    print_pic(FILE_DICTIONARY[str(map[y][x].fruit + 1)], map[y][x].pixelw, map[y][x].pixelh, None)
+                else:
+                    print_pic(FILE_DICTIONARY[map[y][x].ice], map[y][x].pixelw, map[y][x].pixelh, None)
+            if str(map[y][x].fruit) in FILE_DICTIONARY and not map[y][x].ice:
                 print_pic(FILE_DICTIONARY[str(map[y][x].fruit)], map[y][x].pixelw, map[y][x].pixelh, None)
             if str(map[y][x].player) in FILE_DICTIONARY:
                 print_pic(FILE_DICTIONARY[str(map[y][x].player)], map[y][x].pixelw, map[y][x].pixelh, None)
@@ -110,7 +121,8 @@ def main():
                 # client_socket.send(str(message).encode())
         # logging.debug("sending path as requested" + message)
         # client_socket.send(protocol.send_protocol(message).encode())
-        client_socket.send(str(message).encode())
+        client_socket.send(protocol.send_protocol(message))
+        # client_socket.send(str(message).encode())
 
         response = client_socket.recv(1)
 
@@ -118,10 +130,11 @@ def main():
             finish = True
 
         else:
-            response = response + client_socket.recv(4096)
+            response = protocol.recv_protocol(client_socket, response.decode())
+            # response = response + client_socket.recv(4096)
             try:
-                print(response.decode())
-                print_pic(FILE_DICTIONARY[response.decode()], 0, 0, None)
+                print(response)
+                print_pic(FILE_DICTIONARY[response], 0, 0, None)
                 time.sleep(5)
             except Exception:
                 map = pickle.loads(response)
