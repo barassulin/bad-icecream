@@ -36,7 +36,10 @@ def recv_protocol(socket, message):
     message = message + socket.recv(message_length - len(message)).decode()
     while END_SIGN not in message:
         message = message + socket.recv(1).decode()
-    message = socket.recv(int(message[:-message_length]))
+    length = int(message[:-message_length])
+    message = socket.recv(1)
+    while len(message) < length:
+        message = message + socket.recv(1)
     print("reciving - protocol")
     print(message)
     try:
