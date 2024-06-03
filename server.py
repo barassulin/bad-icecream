@@ -28,7 +28,7 @@ USER_ROLE = 'user'
 USER_ROLE_SEPARATOR = ','
 USERS_LINE_SEPARATOR = '\n'
 SERVER_IP = '0.0.0.0'
-SERVER_PORT = 20003
+SERVER_PORT = 2123
 LISTEN_SIZE = 5
 READ_SIZE = 1024
 ADMIN_SIGN = '!'
@@ -147,12 +147,12 @@ def set_players():
 
 def create_all_fruits():
     counter = 0
-    points = 10
+    points = 5
     while counter < 7:
         if counter == 4:
-            points = 20
+            points = 7
         if counter == 6:
-            points = 30
+            points = 10
         numx = random.randint(0, 9)
         numy = random.randint(0, 9)
         while MAP[numy][numx].fruit != 0:

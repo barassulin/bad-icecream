@@ -23,19 +23,19 @@ IMAGE = 'pics/screen1new.jpg'
 REFRESH_RATE = 10
 FRUITS = 7
 # SERVER_IP = '172.16.6.65'
-SERVER_IP = '127.0.0.1'
-SERVER_PORT = 20003
+SERVER_IP = '172.20.10.4'
+SERVER_PORT = 2123
 
 # dict for files
 FILE_DICTIONARY = {
     '1': 'pics/probPL1.jpg',
     '2': 'pics/probPL2.jpg',
-    '10': "pics/cherry.jpg",
-    '11': "pics/icedcherry.jpg",
-    '20': "pics/strawberry.jpg",
-    '21': "pics/icedberry.jpg",
-    '30': "pics/blueberry.jpg",
-    '31': "pics/icedblub.jpg",
+    '5': "pics/cherry.jpg",
+    '6': "pics/icedcherry.jpg",
+    '7': "pics/strawberry.jpg",
+    '8': "pics/icedberry.jpg",
+    '10': "pics/blueberry.jpg",
+    '11': "pics/icedblub.jpg",
     True: 'pics/ice.jpg',
     False: 'pics/empty_cube.jpg',
     "p1won": 'pics/PINK.jpg',
