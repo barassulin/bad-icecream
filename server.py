@@ -202,7 +202,7 @@ def update_map(data, client_index):
             ICE_LOOP[client_index].ydir = player.direction[1]
             ICE_LOOP[client_index].xcube = player.xcube + ICE_LOOP[client_index].xdir
             ICE_LOOP[client_index].ycube = player.ycube + ICE_LOOP[client_index].ydir
-            if Map.check_on_map(ICE_LOOP[client_index].xcube, ICE_LOOP[client_index].ycube):
+            if Map.check_on_map(ICE_LOOP[client_isndex].xcube, ICE_LOOP[client_index].ycube):
                 ICE_LOOP[client_index].is_ice = MAP[ICE_LOOP[client_index].ycube][ICE_LOOP[client_index].xcube].ice
             ICE_LOOP[client_index].is_working = is_ice_loop(ICE_LOOP[client_index].xcube, ICE_LOOP[client_index].ycube, ICE_LOOP[client_index].is_ice)
         moved = False
