@@ -19,12 +19,13 @@ window_width = 800
 window_height = 775
 PINK = (255, 146, 255)
 WHITE = (255, 255, 255)
+START_SCREEN = 'pics/START_SCREEN.jpg'
+END_SCREEN = 'pics/END_SCREEN.jpg'
 IMAGE = 'pics/screen1new.jpg'
 REFRESH_RATE = 10
-FRUITS = 7
 # SERVER_IP = '172.16.6.65'
-SERVER_IP = '172.20.10.4'
-SERVER_PORT = 2123
+SERVER_IP = '127.0.0.1'
+SERVER_PORT = 20003
 
 # dict for files
 FILE_DICTIONARY = {
@@ -93,68 +94,107 @@ def print_map(map):
 
 
 # init screen
+
 pygame.init()
 size = (window_width, window_height)
 screen = pygame.display.set_mode(size)
-img = pygame.image.load(IMAGE)
-clock = pygame.time.Clock()
+GAME_OVER = False
 
 
 def main():
-    screen.blit(img, (0, 0))
-    pygame.display.flip()
+    global GAME_OVER
+    clock = pygame.time.Clock()
+    global finish
+    while not GAME_OVER:
+        # server sending starting map
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect((SERVER_IP, SERVER_PORT))
+        client_socket.settimeout(20)
+        img = pygame.image.load(START_SCREEN)
+        screen.blit(img, (0, 0))
+        print_pic(START_SCREEN, 0, 0, None)
+        pygame.display.flip()
+        finish = False
+        while not finish:
+            message = 0
+            # Handle Pygame events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    finish = True
+                elif event.type == pygame.KEYDOWN:
+                    message = event.key
+                    # client_socket.send(str(message).encode())
+            # logging.debug("sending path as requested" + message)
+            # client_socket.send(protocol.send_protocol(message).encode())
+            client_socket.send(protocol.send_protocol(message))
+            # client_socket.send(str(message).encode())
 
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((SERVER_IP, SERVER_PORT))
-    client_socket.settimeout(20)
-    # server sending starting map
-    finish = False
-    while not finish:
-        message = 0
-        # Handle Pygame events
-        for event in pygame.event.get():
-            print("check")
-            if event.type == pygame.QUIT:
+            response = client_socket.recv(1)
+            if img != IMAGE:
+                img = IMAGE
+                print_pic(img, 0, 0, None)
+                pygame.display.flip()
+            if response == "":
                 finish = True
-            elif event.type == pygame.KEYDOWN:
-                message = event.key
-                # client_socket.send(str(message).encode())
-        # logging.debug("sending path as requested" + message)
-        # client_socket.send(protocol.send_protocol(message).encode())
-        client_socket.send(protocol.send_protocol(message))
-        # client_socket.send(str(message).encode())
+                GAME_OVER = True
 
-        response = client_socket.recv(1)
-
-        if response == "":
-            finish = True
-
-        else:
-            response = protocol.recv_protocol(client_socket, response.decode())
-            # response = response + client_socket.recv(4096)
-            try:
-                print(response)
+            else:
+                response = protocol.recv_protocol(client_socket, response.decode())
+                # response = response + client_socket.recv(4096)
+                try:
+                    print_pic(FILE_DICTIONARY[response], 0, 0, None)
+                    time.sleep(5)
+                    finish = True
+                except Exception:
+                    map = pickle.loads(response)
+                    print_map(map)
+            """
+                # response = protocol.recv_protocol(client_socket, response)
+            # logging.debug("getting msg request" + response)
+            if response in FILE_DICTIONARY:
                 print_pic(FILE_DICTIONARY[response], 0, 0, None)
-                time.sleep(5)
-            except Exception:
-                map = pickle.loads(response)
-                print_map(map)
-        """
-            # response = protocol.recv_protocol(client_socket, response)
-        # logging.debug("getting msg request" + response)
-        if response in FILE_DICTIONARY:
-            print_pic(FILE_DICTIONARY[response], 0, 0, None)
-            finish = True
-        else:
-            response = response
-            MAP = pickle.loads(response)
-            print("MAP")
-            print_map(MAP)
-        """
-        # Tick the clock
-        clock.tick(REFRESH_RATE)
+                finish = True
+            else:
+                response = response
+                MAP = pickle.loads(response)
+                print("MAP")
+                print_map(MAP)
+            """
+            # Tick the clock
+            clock.tick(REFRESH_RATE)
+        print_pic(END_SCREEN, 0, 0, None)
+        time.sleep(1)
 
-    client_socket.close()
+        b = True
+        while b:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    GAME_OVER = True
+                    message = pygame.K_UP
+                    b = False
+                    break
+                elif event.type == pygame.KEYDOWN:
+                    message = event.key
+                    b = False
+                    break
+                clock.tick(REFRESH_RATE)
+        if message != pygame.K_SPACE:
+            GAME_OVER = True
+            """
+        if GAME_OVER != True:
+
+            response = client_socket.recv(1).decode()
+            response = protocol.recv_protocol(client_socket, response)
+            if response.isnumeric():
+                response = int(response)
+            if response == "":
+                GAME_OVER = True
+            else:
+                GAME_OVER = bool(response)
+            """
+        clock.tick(REFRESH_RATE)
+        client_socket.close()
+        print(finish)
 
     pygame.quit()
 

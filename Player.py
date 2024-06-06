@@ -9,6 +9,13 @@ class Player:
         self.score = score
         self.direction = direction
 
+    def set_player(self, xcube, ycube, number, score, direction):
+        self.xcube = xcube
+        self.ycube = ycube
+        self.number = number
+        self.score = score
+        self.direction = direction
+
     def check_got_fruit(self, MAP):
         b = False
         specific_cube = MAP[self.ycube][self.xcube]

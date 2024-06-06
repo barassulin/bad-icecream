@@ -28,7 +28,7 @@ USER_ROLE = 'user'
 USER_ROLE_SEPARATOR = ','
 USERS_LINE_SEPARATOR = '\n'
 SERVER_IP = '0.0.0.0'
-SERVER_PORT = 2123
+SERVER_PORT = 20003
 LISTEN_SIZE = 5
 READ_SIZE = 1024
 ADMIN_SIGN = '!'
@@ -40,10 +40,11 @@ inputs = []
 outputs = []
 message_queues = {}
 exceptional = []
+finish = False
 
 player1 = Player.Player(4, 4, 1, 0, [0, -1])
 player2 = Player.Player(5, 5, 2, 0, [0, 1])
-MAP = Map.create_map()
+MAP = [], []
 
 # players by index
 SOURCE_DICTIONARY = {
@@ -60,10 +61,8 @@ def send_message_to_all(message, open_client_sockets):
     :param message: The message to be sent.
     :param open_client_sockets: List of open client sockets.
     """
-    print("num")
     for client_socket in open_client_sockets:
         #try:
-        print("num2")
         client_socket.send(protocol.send_protocol(message))
         # client_socket.send(message)
         # except socket.error as e:
@@ -79,21 +78,14 @@ def handle_new_connection(server_socket, open_client_sockets):
     open_client_sockets.append(client_socket)
 
 
-def handle_data(current_socket, open_client_sockets, messages_to_send):
-    client_index = open_client_sockets.index(current_socket)
-    client_address = current_socket.getpeername()
+def handle_data(current_socket):
     data = current_socket.recv(1).decode()
-    print(f'data is:{data}')
     if data == "":
         data = None
-        print("None")
     else:
         data = protocol.recv_protocol(current_socket, data)
-    # data = current_socket.recv(4096).decode()
         if data.isnumeric():
             data = int(data)
-    print("data")
-    print(data)
     """
     if data == '':
         # logout(current_socket, open_client_sockets)
@@ -119,11 +111,6 @@ def send_waiting_massages(list_of_messages, wlist):
             list_of_messages.remove(message)
 
 
-def logout(current_socket, open_client_sockets):
-    open_client_sockets.remove(current_socket)
-    current_socket.close()
-
-
 def is_ice_loop(x, y, is_ice):
     if Map.check_on_map(x, y):
         if is_ice == MAP[y][x].ice:
@@ -141,8 +128,15 @@ def try_move(player, player2):
 
 
 def set_players():
+    player1.set_player(4, 4, 1, 0, [0, -1])
+    player2.set_player(5, 5, 2, 0, [0, 1])
     MAP[4][4].player = player1.number
     MAP[5][5].player = player2.number
+
+
+def logout(current_socket, open_client_sockets):
+    open_client_sockets.remove(current_socket)
+    current_socket.close()
 
 
 def create_all_fruits():
@@ -163,6 +157,8 @@ def create_all_fruits():
 
 
 def set_map():
+    global MAP
+    MAP = Map.create_map()
     set_players()
     create_all_fruits()
 
@@ -206,7 +202,8 @@ def update_map(data, client_index):
             ICE_LOOP[client_index].ydir = player.direction[1]
             ICE_LOOP[client_index].xcube = player.xcube + ICE_LOOP[client_index].xdir
             ICE_LOOP[client_index].ycube = player.ycube + ICE_LOOP[client_index].ydir
-            ICE_LOOP[client_index].is_ice = MAP[ICE_LOOP[client_index].ycube][ICE_LOOP[client_index].xcube].ice
+            if Map.check_on_map(ICE_LOOP[client_index].xcube, ICE_LOOP[client_index].ycube):
+                ICE_LOOP[client_index].is_ice = MAP[ICE_LOOP[client_index].ycube][ICE_LOOP[client_index].xcube].ice
             ICE_LOOP[client_index].is_working = is_ice_loop(ICE_LOOP[client_index].xcube, ICE_LOOP[client_index].ycube, ICE_LOOP[client_index].is_ice)
         moved = False
     if data == pygame.K_UP:
@@ -239,115 +236,106 @@ def update_map(data, client_index):
         FRUITS = FRUITS - 1
 
     if FRUITS == 0:
-        global GAME_OVER
-        GAME_OVER = True
+        global finish
+        finish = True
 
 
-    print("finished updating")
-
-
-def receive_responses(server_socket, open_client_sockets, messages_to_send):
+def receive_responses(server_socket, open_client_sockets):
     responses = {}
-    print('checking responose')
-    i = 0
     # Loop until responses are received from all clients
     while len(responses) < MAX_CLIENTS:
-        i = i+1
-        print(i)
         # Use select to monitor sockets for incoming data
         rlist, _, _ = select.select([server_socket] + open_client_sockets, [], [])
-        print("Select")
         # Iterate over sockets with incoming data
+
         for current_socket in rlist:
-            print(current_socket)
             if current_socket is server_socket:
                 if len(open_client_sockets) >= MAX_CLIENTS:
-                    print("numy!!")
                     # logging.log('Maximum number of clients reached. Rejecting new connection.')
-                    client_socket, client_address = current_socket.accept()
-                    client_socket.close()
+
+                        client_socket, client_address = current_socket.accept()
+                        client_socket.close()
                 else:
+
                     client_socket, client_address = current_socket.accept()
                     # logging.log('received a new connection from '
                                 # + str(client_address[0]) + ':'
                                 # + str(client_address[1]))
                     open_client_sockets.append(client_socket)
-                    print("nume!")
                     # send starting map
             else:
                 # Receive response from client
-                response = handle_data(current_socket, open_client_sockets, messages_to_send)
-                print(response)
-                print("res")
+                response = handle_data(current_socket)
                 # Check if response is empty, indicating client disconnected
-                if response is None:
-                    # Remove disconnected client from the list of open sockets
-                    # open_client_sockets.remove(current_socket)
-                    # update who won
-                    print(f"if+{i}")
-
-                    pass
-                else:
-                    print(f"else1+{i}")
+                if response is not None:
                     client_index = open_client_sockets.index(current_socket)
                     responses[current_socket] = response
-                    print(f'response of {client_index} is {response}')
                     update_map(response, client_index)
-                    print(f"else2+{i}")
+                    """
+                        else:
+                            logout(current_socket, open_client_sockets)
+                            open_client_sockets[0].send(protocol.send_protocol(msg))
+                    """
 
-                print("finished")
 
-
-    print("while")
-    return responses
 
 
 def main_loop(server_socket):
-    messages_to_send = []
-    open_client_sockets = []
-
-    try:
-        server_socket.bind((SERVER_IP, SERVER_PORT))
-        server_socket.listen(LISTEN_SIZE)
-
-        while not GAME_OVER:
-            rlist, wlist, xlist = select.select([server_socket]
-                                                + open_client_sockets,
-                                                [], open_client_sockets)
-
+    server_socket.bind((SERVER_IP, SERVER_PORT))
+    server_socket.listen(LISTEN_SIZE)
+    global GAME_OVER
+    global FRUITS
+    global finish
+    while True:
+        print('setting game')
+        FRUITS = 7
+        finish = False
+        set_map()
+        messages_to_send = []
+        open_client_sockets = []
+        rlist, wlist, xlist = select.select([server_socket]
+                                            + open_client_sockets,
+                                            [], open_client_sockets)
+        while not finish:
             for current_socket in xlist:
                 # logging.log('handling exception socket')
-                logout(current_socket, open_client_sockets)
-
-            responses = receive_responses(server_socket, open_client_sockets, messages_to_send)
-            print("recv?")
+                open_client_sockets.remove(current_socket)
+                current_socket.close()
+            receive_responses(server_socket, open_client_sockets)
             # message = protocol.send_protocol(pickle.dumps(MAP).decode())
-            if not GAME_OVER:
+            if not finish:
                 message = pickle.dumps(MAP)
             else:
                 if player1.score > player2.score:
                     message = "p1won".encode()
                 else:
                     message = "p2won".encode()
-            print(message)
-            print("mes")
             send_message_to_all(message, open_client_sockets)
+        print("hi")
+        for current_socket in open_client_sockets:
+            if current_socket != server_socket:
+                logout(current_socket, open_client_sockets)
+        """
+        #
+        for current_socket in open_client_sockets:
+            open_client_sockets.remove(current_socket)
+            current_socket.close()
+        
+        """
 
-            # send_waiting_massages(messages_to_send, wlist)
+        # send_message_to_all(GAME_OVER, open_client_sockets)
+# except socket.error as err:
+    # logging.log('received socket error - exiting, ' + str(err))
 
-    # except socket.error as err:
-        # logging.log('received socket error - exiting, ' + str(err))
-    finally:
-
-        server_socket.close()
 
 
 def main():
     server_socket = socket.socket()
-    set_map()
+
 
     main_loop(server_socket)
 
+    server_socket.close()
 
 if __name__ == '__main__':
     # logging.activate_log(LOG_FILE)
