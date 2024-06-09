@@ -62,19 +62,11 @@ def send_message_to_all(message, open_client_sockets):
     :param open_client_sockets: List of open client sockets.
     """
     for client_socket in open_client_sockets:
-        #try:
         client_socket.send(protocol.send_protocol(message))
-        # client_socket.send(message)
-        # except socket.error as e:
-            # Handle socket errors (if any)
-            # logging.log(f"Error sending message to {client_socket.getpeername()}: {e}")
 
 
 def handle_new_connection(server_socket, open_client_sockets):
     client_socket, client_address = server_socket.accept()
-    # logging.log('received a new connection from '
-                # + str(client_address[0]) + ':'
-                # + str(client_address[1]))
     open_client_sockets.append(client_socket)
 
 
@@ -179,19 +171,17 @@ def update_map(data, client_index):
     print(player)
 
     if len(ICE_LOOP) < MAX_CLIENTS:
-        ICE_LOOP.append(IceLoop.IceLoop(False, player1.xcube, player1.ycube, player1.direction[0], player1.direction[1], MAP[player1.ycube][player1.xcube].ice))
-        ICE_LOOP.append(IceLoop.IceLoop(False, player2.xcube, player2.ycube, player2.direction[0], player2.direction[1], MAP[player2.ycube][player2.xcube].ice))
-
-    """
-    else:
-        ICE_LOOP[client_index] = IceLoop.IceLoop(False, player.xcube, player.ycube, player.direction[0], player.direction[1], MAP[player.ycube][player.xcube].ice)
-    """
+        ICE_LOOP.append(IceLoop.IceLoop(False, player1.xcube, player1.ycube, player1.direction[0],
+                                        player1.direction[1], MAP[player1.ycube][player1.xcube].ice))
+        ICE_LOOP.append(IceLoop.IceLoop(False, player2.xcube, player2.ycube, player2.direction[0],
+                                        player2.direction[1], MAP[player2.ycube][player2.xcube].ice))
 
     if ICE_LOOP[client_index].is_working:
         MAP[ICE_LOOP[client_index].ycube][ICE_LOOP[client_index].xcube].update_ice()
         ICE_LOOP[client_index].xcube = ICE_LOOP[client_index].xcube + ICE_LOOP[client_index].xdir
         ICE_LOOP[client_index].ycube = ICE_LOOP[client_index].ycube + ICE_LOOP[client_index].ydir
-        ICE_LOOP[client_index].is_working = is_ice_loop(ICE_LOOP[client_index].xcube, ICE_LOOP[client_index].ycube, ICE_LOOP[client_index].is_ice)
+        ICE_LOOP[client_index].is_working = is_ice_loop(ICE_LOOP[client_index].xcube, ICE_LOOP[client_index].ycube,
+                                                        ICE_LOOP[client_index].is_ice)
 
     # if data == pygame.KEYDOWN:
     moved = True
@@ -204,7 +194,8 @@ def update_map(data, client_index):
             ICE_LOOP[client_index].ycube = player.ycube + ICE_LOOP[client_index].ydir
             if Map.check_on_map(ICE_LOOP[client_index].xcube, ICE_LOOP[client_index].ycube):
                 ICE_LOOP[client_index].is_ice = MAP[ICE_LOOP[client_index].ycube][ICE_LOOP[client_index].xcube].ice
-            ICE_LOOP[client_index].is_working = is_ice_loop(ICE_LOOP[client_index].xcube, ICE_LOOP[client_index].ycube, ICE_LOOP[client_index].is_ice)
+            ICE_LOOP[client_index].is_working = is_ice_loop(ICE_LOOP[client_index].xcube, ICE_LOOP[client_index].ycube,
+                                                            ICE_LOOP[client_index].is_ice)
         moved = False
     if data == pygame.K_UP:
         print(pygame.K_UP)
@@ -251,16 +242,14 @@ def receive_responses(server_socket, open_client_sockets):
         for current_socket in rlist:
             if current_socket is server_socket:
                 if len(open_client_sockets) >= MAX_CLIENTS:
-                    # logging.log('Maximum number of clients reached. Rejecting new connection.')
-
-                        client_socket, client_address = current_socket.accept()
-                        client_socket.close()
+                    client_socket, client_address = current_socket.accept()
+                    client_socket.close()
                 else:
 
                     client_socket, client_address = current_socket.accept()
                     # logging.log('received a new connection from '
-                                # + str(client_address[0]) + ':'
-                                # + str(client_address[1]))
+                    # + str(client_address[0]) + ':'
+                    # + str(client_address[1]))
                     open_client_sockets.append(client_socket)
                     # send starting map
             else:
@@ -276,8 +265,6 @@ def receive_responses(server_socket, open_client_sockets):
                             logout(current_socket, open_client_sockets)
                             open_client_sockets[0].send(protocol.send_protocol(msg))
                     """
-
-
 
 
 def main_loop(server_socket):
@@ -324,18 +311,19 @@ def main_loop(server_socket):
         """
 
         # send_message_to_all(GAME_OVER, open_client_sockets)
-# except socket.error as err:
-    # logging.log('received socket error - exiting, ' + str(err))
 
+
+# except socket.error as err:
+# logging.log('received socket error - exiting, ' + str(err))
 
 
 def main():
     server_socket = socket.socket()
 
-
     main_loop(server_socket)
 
     server_socket.close()
+
 
 if __name__ == '__main__':
     # logging.activate_log(LOG_FILE)

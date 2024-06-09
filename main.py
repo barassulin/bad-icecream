@@ -26,6 +26,7 @@ REFRESH_RATE = 10
 # SERVER_IP = '172.16.6.65'
 SERVER_IP = '127.0.0.1'
 SERVER_PORT = 20003
+finish = ''
 
 # dict for files
 FILE_DICTIONARY = {
